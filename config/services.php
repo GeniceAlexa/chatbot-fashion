@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'ai' => [
+        'key' => env('AI_API_KEY'),
+        'model' => env('AI_MODEL'),
+        'base' => env(
+            'AI_BASE_URL',
+            'https://generativelanguage.googleapis.com/v1beta/models'
+        ),
+    ],
 ];
