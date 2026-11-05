@@ -24,7 +24,9 @@ class AiService
             ->retry([1000, 2000], throw: false)
             ->post($url, [
                 'systemInstruction' => [
-                    'parts' => [['text' => $system]]
+                    'parts' => [
+                            ['text' => $system]
+                        ]
                 ],
                 'contents' => $contents,
                 'generationConfig' => [
@@ -32,14 +34,12 @@ class AiService
                 ],
             ]);
 
-        if ($response->failed()) {
-            $message = $response->json('error.message', 'Tidak ada detail error');
+        $text = $response->json('candidates.0.content.parts.0.text');
 
-            throw new \RuntimeException(
-                'Layanan AI gagal (' . $response->status() . '): ' . $message
-            );
+        if (blank($text)) {
+            throw new \RuntimeException('AI tidak mengembalikan jawaban.');
         }
 
-        return $response->json('candidates.0.content.parts.0.text', '');
+        return $text;
     }
 }
