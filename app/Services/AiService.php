@@ -34,7 +34,11 @@ class AiService
                 ],
             ]);
 
-        $text = $response->json('candidates.0.content.parts.0.text');
+               $text = $response->json('candidates.0.content.parts.0.text');
+
+        \Illuminate\Support\Facades\Log::info('pemakaian_token', [
+            'usage' => $response->json('usageMetadata') ?? $response->json('usage'),
+        ]);
 
         if (blank($text)) {
             throw new \RuntimeException('AI tidak mengembalikan jawaban.');
