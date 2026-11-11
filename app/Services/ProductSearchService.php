@@ -44,11 +44,21 @@ class ProductSearchService
             $query->where('price', '<=', $max);
         }
 
-        $products = $query->limit(30)->get();
+        $products = $query->limit(50)->get();
 
-        return $products
-            ->sortByDesc(fn ($p) => $this->score($p, $words))
+        if (empty($words)) {
+            return $products->take($limit)->values();
+        }
+
+        $scored = $products->map(fn ($p) => ['product' => $p, 'score' => $this->score($p, $words)]);
+        $top = $scored->max('score') ?? 0;
+        $min = max(1, (int) ceil($top / 2));
+
+        return $scored
+            ->where('score', '>=', $min)
+            ->sortByDesc('score')
             ->take($limit)
+            ->pluck('product')
             ->values();
     }
 
@@ -57,7 +67,7 @@ class ProductSearchService
         $stop = ['ada', 'apa', 'yang', 'dan', 'atau', 'dari', 'untuk', 'berapa', 'harga',
                  'harganya', 'ukuran', 'warna', 'kak', 'mau', 'cari', 'dong', 'nggak', 'gak',
                  'bawah', 'dibawah', 'ribu', 'juta', 'maksimal', 'kurang', 'under', 'stok',
-                 'masih', 'tersedia', 'bisa', 'tolong', 'baju', 'pakaian', 'produk', 'barang', 'fashion', 'item',];
+                 'masih', 'tersedia', 'bisa', 'tolong', 'baju', 'pakaian', 'produk', 'barang', 'fashion', 'item', 'hari', 'ini', 'itu', 'bagaimana', 'gimana', 'kapan', 'dimana', 'siapa', 'kenapa', 'lama', 'kalau', 'saya', 'aku', 'kamu',];
 
         $words = preg_split('/[^a-z0-9\-]+/i', mb_strtolower($message), -1, PREG_SPLIT_NO_EMPTY);
 
